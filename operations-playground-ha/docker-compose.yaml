@@ -1,0 +1,100 @@
+version: "3"
+services:
+  job:
+    build: ../docker/ops-playground-image
+    command: "flink run -d /opt/ClickCountJob.jar --bootstrap.servers kafka:9092 --checkpointing"
+    volumes:
+      - ./conf:/opt/flink/conf
+  clickevent-generator:
+    build: ../docker/ops-playground-image
+    command: "java -classpath /opt/ClickCountJob.jar:/opt/flink/lib/* org.apache.flink.playgrounds.ops.clickcount.ClickEventGenerator --bootstrap.servers kafka:9092 --topic input"
+    depends_on:
+      - kafka
+
+  jobmanager1:
+    image: flink:1.11.0-scala_2.11
+    command: "jobmanager.sh start-foreground jobmanager1"
+    hostname: jobmanager1
+    ports:
+      - 8081:8081
+    volumes:
+      - ./conf:/opt/flink/conf
+      - flink-checkpoints-directory:/tmp/flink-checkpoints-directory
+      - flink-savepoints-directory:/tmp/flink-savepoints-directory
+      - flink-ha-directory:/tmp/flink-ha-directory
+  jobmanager2:
+    image: flink:1.11.0-scala_2.11
+    command: "jobmanager.sh start-foreground jobmanager2"
+    hostname: jobmanager2
+    ports:
+      - 8082:8081
+    volumes:
+      - ./conf:/opt/flink/conf
+      - flink-checkpoints-directory:/tmp/flink-checkpoints-directory
+      - flink-savepoints-directory:/tmp/flink-savepoints-directory
+      - flink-ha-directory:/tmp/flink-ha-directory
+  jobmanager3:
+    image: flink:1.11.0-scala_2.11
+    command: "jobmanager.sh start-foreground jobmanager3"
+    hostname: jobmanager3
+    ports:
+      - 8083:8081
+    volumes:
+      - ./conf:/opt/flink/conf
+      - flink-checkpoints-directory:/tmp/flink-checkpoints-directory
+      - flink-savepoints-directory:/tmp/flink-savepoints-directory
+      - flink-ha-directory:/tmp/flink-ha-directory
+
+  taskmanager:
+    image: flink:1.11.0-scala_2.11
+    command: "taskmanager.sh start-foreground"
+    hostname: taskmanager
+    volumes:
+      - ./conf:/opt/flink/conf
+      - flink-checkpoints-directory:/tmp/flink-checkpoints-directory
+      - flink-savepoints-directory:/tmp/flink-savepoints-directory
+      - flink-ha-directory:/tmp/flink-ha-directory
+
+  zoo1:
+    image: zookeeper:3.5
+    restart: always
+    hostname: zoo1
+    ports:
+      - 2181:2181
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+  zoo2:
+    image: zookeeper:3.5
+    restart: always
+    hostname: zoo2
+    ports:
+      - 2182:2181
+    environment:
+      ZOO_MY_ID: 2
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=0.0.0.0:2888:3888;2181 server.3=zoo3:2888:3888;2181
+  zoo3:
+    image: zookeeper:3.5
+    restart: always
+    hostname: zoo3
+    ports:
+      - 2183:2181
+    environment:
+      ZOO_MY_ID: 3
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=0.0.0.0:2888:3888;2181
+
+  kafka:
+    image: wurstmeister/kafka:2.12-2.2.1
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://:9092,OUTSIDE://:9094
+      KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_CREATE_TOPICS: "input:2:1, output:2:1"
+      KAFKA_ZOOKEEPER_CONNECT: "zoo1:2181,zoo2:2181,zoo3:2181"
+    ports:
+      - 9094:9094
+volumes:
+  flink-checkpoints-directory:
+  flink-savepoints-directory:
+  flink-ha-directory:
