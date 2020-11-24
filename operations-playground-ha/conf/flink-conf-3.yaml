@@ -34,7 +34,7 @@ heartbeat.interval: 10000
 heartbeat.timeout: 50000
 
 high-availability: zookeeper
-high-availability.zookeeper.quorum: zoo1,zoo2,zoo3
+high-availability.zookeeper.quorum: zoo3
 high-availability.storageDir: file:///tmp/flink-ha-directory
 high-availability.cluster-id: /mycluster
 high-availability.zookeeper.client.connection-timeout: 30000

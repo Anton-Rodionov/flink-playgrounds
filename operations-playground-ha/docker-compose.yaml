@@ -4,7 +4,7 @@ services:
     build: ../docker/ops-playground-image
     command: "flink run -d /opt/ClickCountJob.jar --bootstrap.servers kafka:9092 --checkpointing"
     volumes:
-      - ./conf:/opt/flink/conf
+      - ./conf/flink-conf.yaml:/opt/flink/conf/flink-conf.yaml
   clickevent-generator:
     build: ../docker/ops-playground-image
     command: "java -classpath /opt/ClickCountJob.jar:/opt/flink/lib/* org.apache.flink.playgrounds.ops.clickcount.ClickEventGenerator --bootstrap.servers kafka:9092 --topic input"
@@ -13,44 +13,48 @@ services:
 
   jobmanager1:
     image: flink:1.9.1-scala_2.12
+    restart: always
     command: "jobmanager.sh start-foreground jobmanager1"
     hostname: jobmanager1
     ports:
       - 8081:8081
     volumes:
-      - ./conf:/opt/flink/conf
+      - ./conf/flink-conf-1.yaml:/opt/flink/conf/flink-conf.yaml
       - flink-checkpoints-directory:/tmp/flink-checkpoints-directory
       - flink-savepoints-directory:/tmp/flink-savepoints-directory
       - flink-ha-directory:/tmp/flink-ha-directory
   jobmanager2:
     image: flink:1.9.1-scala_2.12
+    restart: always
     command: "jobmanager.sh start-foreground jobmanager2"
     hostname: jobmanager2
     ports:
       - 8082:8081
     volumes:
-      - ./conf:/opt/flink/conf
+      - ./conf/flink-conf-2.yaml:/opt/flink/conf/flink-conf.yaml
       - flink-checkpoints-directory:/tmp/flink-checkpoints-directory
       - flink-savepoints-directory:/tmp/flink-savepoints-directory
       - flink-ha-directory:/tmp/flink-ha-directory
   jobmanager3:
     image: flink:1.9.1-scala_2.12
+    restart: always
     command: "jobmanager.sh start-foreground jobmanager3"
     hostname: jobmanager3
     ports:
       - 8083:8081
     volumes:
-      - ./conf:/opt/flink/conf
+      - ./conf/flink-conf-3.yaml:/opt/flink/conf/flink-conf.yaml
       - flink-checkpoints-directory:/tmp/flink-checkpoints-directory
       - flink-savepoints-directory:/tmp/flink-savepoints-directory
       - flink-ha-directory:/tmp/flink-ha-directory
 
   taskmanager:
     image: flink:1.9.1-scala_2.12
+    restart: always
     command: "taskmanager.sh start-foreground"
     hostname: taskmanager
     volumes:
-      - ./conf:/opt/flink/conf
+      - ./conf/flink-conf.yaml:/opt/flink/conf/flink-conf.yaml
       - flink-checkpoints-directory:/tmp/flink-checkpoints-directory
       - flink-savepoints-directory:/tmp/flink-savepoints-directory
       - flink-ha-directory:/tmp/flink-ha-directory
