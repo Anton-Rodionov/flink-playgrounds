@@ -12,7 +12,7 @@ services:
       - kafka
 
   jobmanager1:
-    image: flink:1.11.0-scala_2.11
+    image: flink:1.9.1-scala_2.12
     command: "jobmanager.sh start-foreground jobmanager1"
     hostname: jobmanager1
     ports:
@@ -23,7 +23,7 @@ services:
       - flink-savepoints-directory:/tmp/flink-savepoints-directory
       - flink-ha-directory:/tmp/flink-ha-directory
   jobmanager2:
-    image: flink:1.11.0-scala_2.11
+    image: flink:1.9.1-scala_2.12
     command: "jobmanager.sh start-foreground jobmanager2"
     hostname: jobmanager2
     ports:
@@ -34,7 +34,7 @@ services:
       - flink-savepoints-directory:/tmp/flink-savepoints-directory
       - flink-ha-directory:/tmp/flink-ha-directory
   jobmanager3:
-    image: flink:1.11.0-scala_2.11
+    image: flink:1.9.1-scala_2.12
     command: "jobmanager.sh start-foreground jobmanager3"
     hostname: jobmanager3
     ports:
@@ -46,7 +46,7 @@ services:
       - flink-ha-directory:/tmp/flink-ha-directory
 
   taskmanager:
-    image: flink:1.11.0-scala_2.11
+    image: flink:1.9.1-scala_2.12
     command: "taskmanager.sh start-foreground"
     hostname: taskmanager
     volumes:
@@ -56,32 +56,32 @@ services:
       - flink-ha-directory:/tmp/flink-ha-directory
 
   zoo1:
-    image: zookeeper:3.5
+    image: zookeeper:3.4.10
     restart: always
     hostname: zoo1
     ports:
       - 2181:2181
     environment:
       ZOO_MY_ID: 1
-      ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
   zoo2:
-    image: zookeeper:3.5
+    image: zookeeper:3.4.10
     restart: always
     hostname: zoo2
     ports:
       - 2182:2181
     environment:
       ZOO_MY_ID: 2
-      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=0.0.0.0:2888:3888;2181 server.3=zoo3:2888:3888;2181
+      ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=0.0.0.0:2888:3888 server.3=zoo3:2888:3888
   zoo3:
-    image: zookeeper:3.5
+    image: zookeeper:3.4.10
     restart: always
     hostname: zoo3
     ports:
       - 2183:2181
     environment:
       ZOO_MY_ID: 3
-      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=0.0.0.0:2888:3888;2181
+      ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=0.0.0.0:2888:3888
 
   kafka:
     image: wurstmeister/kafka:2.12-2.2.1
